@@ -27,7 +27,7 @@ func (a *API) GetCurrentVoterState() error {
 		for _, wallet := range resp.Data {
 			if _, registered := a.delegate.Voters[wallet.Address]; !registered {
 				a.delegate.Voters[wallet.Address] = payoutscript.Voter{
-					Address:       wallet.Address,
+					Address:       payoutscript.VoterAddress(wallet.Address),
 					IsVoter:       true,
 					VoteTimestamp: nil,
 				}
