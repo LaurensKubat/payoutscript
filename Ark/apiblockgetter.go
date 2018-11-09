@@ -5,7 +5,6 @@ import (
 	ark "github.com/ArkEcosystem/go-client/client/two"
 	arkcrypto "github.com/ArkEcosystem/go-crypto/crypto"
 	"github.com/payoutscript"
-	"strconv"
 	"time"
 )
 
@@ -54,5 +53,15 @@ func (a *API) GetPastVotersStates() error {
 				}
 			}
 		}
+	}
+	return nil
+}
+
+func (a *API) GetBlocks(blockchan chan payoutscript.Block, ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		return
+	default:
+
 	}
 }
