@@ -2,8 +2,8 @@ package payoutscript
 
 type Block struct {
 	Timestamp Timestamp
-	NewVotes  map[VoterAdress]Voter
-	UnVotes   map[VoterAdress]Voter
+	NewVotes  map[VoterAddress]Voter
+	UnVotes   map[VoterAddress]Voter
 }
 
 type Timestamp struct {
@@ -14,8 +14,8 @@ type Timestamp struct {
 
 func NewBlock() *Block {
 	return &Block{
-		NewVotes: make(map[VoterAdress]Voter),
-		UnVotes:  make(map[VoterAdress]Voter),
+		NewVotes: make(map[VoterAddress]Voter),
+		UnVotes:  make(map[VoterAddress]Voter),
 	}
 }
 

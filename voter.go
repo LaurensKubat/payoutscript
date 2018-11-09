@@ -5,9 +5,9 @@ import (
 )
 
 type Voter struct {
-	Address       VoterAdress
+	Address       VoterAddress
 	IsVoter       bool
 	VoteTimestamp time.Time
 }
 
-type VoterAdress string
+type VoterAddress string
