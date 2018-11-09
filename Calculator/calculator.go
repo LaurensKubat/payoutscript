@@ -1,19 +1,28 @@
 package Calculator
 
 import (
-	ark "github.com/ArkEcosystem/go-client/client/two"
+	"github.com/payoutscript"
+	"github.com/pkg/errors"
 )
 
 type ShareCalc struct {
-	share    float64
-	delegate Delegate
-	client   *ark.Client
+	share     float64
+	NewBlocks chan payoutscript.Block
 }
 
-func NewShareCalc(delegate Delegate, share float64) *ShareCalc {
+const NoBlock = "No new block"
+
+func NewShareCalc(share float64) *ShareCalc {
 	return &ShareCalc{
-		share:    share,
-		delegate: delegate,
-		client:   ark.NewClient(nil),
+		share: share,
+	}
+}
+
+func (s ShareCalc) NextBlock() (payoutscript.Block, error) {
+	select {
+	case block := <-s.NewBlocks:
+		return block, nil
+	default:
+		return payoutscript.Block{}, errors.New(NoBlock)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	ark "github.com/ArkEcosystem/go-client/client/two"
 	arkcrypto "github.com/ArkEcosystem/go-crypto/crypto"
+	"github.com/payoutscript"
 )
 
 type API struct {
@@ -25,7 +26,7 @@ func (a *API) GetCurrentVoterState() error {
 
 		for _, wallet := range resp.Data {
 			if _, registered := a.delegate.Voters[wallet.Address]; !registered {
-				a.delegate.Voters[wallet.Address] = Voter{
+				a.delegate.Voters[wallet.Address] = payoutscript.Voter{
 					Address:       wallet.Address,
 					IsVoter:       true,
 					VoteTimestamp: nil,
