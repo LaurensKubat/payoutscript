@@ -1,9 +1,11 @@
 package payoutscript
 
-import ark "github.com/ArkEcosystem/go-client/client/two"
+import (
+	"time"
+)
 
 type Voter struct {
 	Address       string
 	IsVoter       bool
-	VoteTimestamp ark.Timestamp
+	VoteTimestamp time.Time
 }

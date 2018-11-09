@@ -5,12 +5,14 @@ import (
 	ark "github.com/ArkEcosystem/go-client/client/two"
 	arkcrypto "github.com/ArkEcosystem/go-crypto/crypto"
 	"github.com/payoutscript"
+	"strconv"
+	"time"
 )
 
 type API struct {
-	share float64
+	share    float64
 	delegate Delegate
-	client *ark.Client
+	client   *ark.Client
 }
 
 func (a *API) GetCurrentVoterState() error {
@@ -18,7 +20,7 @@ func (a *API) GetCurrentVoterState() error {
 	max := 1
 	for ; curpage <= max; curpage++ {
 		resp, _, err := a.client.Delegates.Voters(context.Background(),
-			a.delegate.Address, &ark.Pagination{Page:curpage, Limit: 500})
+			a.delegate.Address, &ark.Pagination{Page: curpage, Limit: 500})
 		max = int(resp.Meta.PageCount)
 		if err != nil {
 			return err
@@ -47,8 +49,8 @@ func (a *API) GetPastVotersStates() error {
 		}
 		for _, transaction := range resp.Data {
 			if transaction.Type == arkcrypto.TRANSACTION_TYPES.Vote {
-				if voter.VoteTimestamp ==  {// add
-					voter.VoteTimestamp = transaction.Timestamp
+				if voter.VoteTimestamp.IsZero() {
+					voter.VoteTimestamp = time.Unix(int64(transaction.Timestamp.Unix), 0)
 				}
 			}
 		}
