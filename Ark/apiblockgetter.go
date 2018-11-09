@@ -4,7 +4,7 @@ import (
 	"context"
 	ark "github.com/ArkEcosystem/go-client/client/two"
 	arkcrypto "github.com/ArkEcosystem/go-crypto/crypto"
-	"github.com/payoutscript"
+	"github.com/LaurensKubat/payoutscript/payoutscript"
 	"time"
 )
 

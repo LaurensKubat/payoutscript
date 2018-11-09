@@ -4,6 +4,7 @@ type Block struct {
 	Timestamp Timestamp
 	NewVotes  map[VoterAddress]Voter
 	UnVotes   map[VoterAddress]Voter
+	Value     float64
 }
 
 type Timestamp struct {

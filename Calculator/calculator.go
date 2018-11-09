@@ -1,7 +1,7 @@
 package Calculator
 
 import (
-	"github.com/payoutscript"
+	"github.com/LaurensKubat/payoutscript/payoutscript"
 	"github.com/pkg/errors"
 )
 

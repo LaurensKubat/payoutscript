@@ -7,7 +7,7 @@
 // tables used to accelerate operations.
 // +build ignore
 
-package main
+package btcec
 
 import (
 	"bytes"

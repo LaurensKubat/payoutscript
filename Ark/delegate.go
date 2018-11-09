@@ -1,6 +1,6 @@
 package Ark
 
-import "github.com/payoutscript"
+import "github.com/LaurensKubat/payoutscript"
 
 type Delegate struct {
 	Voters  map[string]payoutscript.Voter
