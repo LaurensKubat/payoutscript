@@ -36,10 +36,10 @@ func (a *API) GetCurrentVoterState() error {
 	return nil
 }
 
-func (s ShareCalc) GetPastVotersStates() error {
-	for address, voter := range s.delegate.Voters {
+func (a *API) GetPastVotersStates() error {
+	for address, voter := range a.delegate.Voters {
 		curpage := 1
-		resp, _, err := s.client.Wallets.Transactions(context.Background(), address,
+		resp, _, err := a.client.Wallets.Transactions(context.Background(), address,
 			&ark.Pagination{Page: curpage, Limit: 500})
 		if err != nil {
 			return err
