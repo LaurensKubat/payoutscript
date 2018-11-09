@@ -9,7 +9,6 @@ import (
 )
 
 type API struct {
-	share    float64
 	delegate Delegate
 	client   *ark.Client
 }
