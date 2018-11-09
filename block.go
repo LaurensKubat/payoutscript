@@ -21,6 +21,10 @@ func NewBlock() *Block {
 	}
 }
 
-func (b *Block) AddVoter() {
+func (b *Block) NewVoter() {
+
+}
+
+func (b *Block) NewUnvote() {
 
 }

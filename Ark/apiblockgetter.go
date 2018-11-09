@@ -1,4 +1,4 @@
-package payoutscript
+package Ark
 
 import (
 	"context"

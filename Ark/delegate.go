@@ -1,4 +1,4 @@
-package payoutscript
+package Ark
 
 type Delegate struct {
 	Voters  map[string]Voter
