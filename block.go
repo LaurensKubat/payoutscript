@@ -1,29 +1,15 @@
 package payoutscript
 
-type Block struct {
-	Timestamp Timestamp
-	NewVotes  map[VoterAddress]Voter
-	UnVotes   map[VoterAddress]Voter
-	Value     float64
-}
+import "time"
 
-type Timestamp struct {
-	Epoch int64
-	Unix  int64
-	Human string
+type Block struct {
+	Timestamp time.Time
+	Voters    map[VoterAddress]Voter
+	Value     float64
 }
 
 func NewBlock() *Block {
 	return &Block{
-		NewVotes: make(map[VoterAddress]Voter),
-		UnVotes:  make(map[VoterAddress]Voter),
+		Voters: make(map[VoterAddress]Voter),
 	}
-}
-
-func (b *Block) NewVoter() {
-
-}
-
-func (b *Block) NewUnvote() {
-
 }

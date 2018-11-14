@@ -6,8 +6,8 @@ import (
 
 type Voter struct {
 	Address       VoterAddress
-	IsVoter       bool
 	VoteTimestamp time.Time
+	Stake         float64
 }
 
 type VoterAddress string

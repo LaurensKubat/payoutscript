@@ -1,4 +1,4 @@
-package Ark
+package ark
 
 import "github.com/LaurensKubat/payoutscript"
 
@@ -9,4 +9,8 @@ type Delegate struct {
 
 func NewDelegate() *Delegate {
 	return &Delegate{Voters: make(map[string]payoutscript.Voter)}
+}
+
+func (d Delegate) GetTotalValue() float64 {
+
 }
