@@ -9,7 +9,6 @@ import (
 // calculator checks that no blocks before its current state are calculated because the calculation is dependant on it's
 // current state.
 type Calculator struct {
-	share        float64
 	NewBlocks    chan payoutscript.Block
 	currentState State
 	delegate     payoutscript.Delegate
@@ -26,9 +25,8 @@ const (
 	InsufficientBalance = "insufficient balance for the calculation"
 )
 
-func NewShareCalc(share float64, NewBlocks chan payoutscript.Block) *Calculator {
+func NewShareCalc(NewBlocks chan payoutscript.Block) *Calculator {
 	return &Calculator{
-		share:     share,
 		NewBlocks: NewBlocks,
 	}
 }
@@ -54,29 +52,28 @@ func (s *Calculator) getTotalState(p payoutscript.BlockProducer) error {
 	return nil
 }
 
-func (s *Calculator) CalculateBlock(block payoutscript.Block) (map[payoutscript.VoterAddress]float64, error) {
+func (s *Calculator) CalculateBlock(block payoutscript.Block) (map[payoutscript.VoterAddress]int64, error) {
 	err := s.updateState(block.Voters, block.Timestamp)
 	if err != nil {
 		return nil, err
 	}
-	voterValue := block.Value * s.share
-	if !s.verifyBalance(voterValue) {
+	if !s.verifyBalance(block.Value) {
 		return nil, errors.New(InsufficientBalance)
 	}
-	payouts, err := s.calculateBalance(voterValue)
+	payouts, err := s.calculateBalance(block.Value)
 	if err != nil {
 		return nil, err
 	}
 	return payouts, nil
 }
 
-func (s *Calculator) verifyBalance(amount float64) bool {
-	var totalVoterStake float64
+func (s *Calculator) verifyBalance(amount int64) bool {
+	var totalVoterStake int64
 	for _, voter := range s.currentState.Voters {
 		totalVoterStake += voter.Stake
 	}
 	for _, voter := range s.currentState.Voters {
-		amount -= (voter.Stake / totalVoterStake)
+		amount -= amount * voter.Percentage * (voter.Stake / totalVoterStake)
 		if amount < 0 {
 			return false
 		}
@@ -84,15 +81,15 @@ func (s *Calculator) verifyBalance(amount float64) bool {
 	return true
 }
 
-func (s *Calculator) calculateBalance(amount float64) (map[payoutscript.VoterAddress]float64, error) {
-	var totalVoterStake float64
-	rewardPerVoter := make(map[payoutscript.VoterAddress]float64)
+func (s *Calculator) calculateBalance(amount int64) (map[payoutscript.VoterAddress]int64, error) {
+	var totalVoterStake int64
+	rewardPerVoter := make(map[payoutscript.VoterAddress]int64)
 	for _, voter := range s.currentState.Voters {
 		totalVoterStake += voter.Stake
 	}
 	for _, voter := range s.currentState.Voters {
-		toPay := amount * (voter.Stake / totalVoterStake)
-		amount -= voter.Stake / totalVoterStake
+		toPay := amount * voter.Percentage * (voter.Stake / totalVoterStake)
+		amount -= amount * voter.Percentage * (voter.Stake / totalVoterStake)
 		if amount < 0 {
 			return nil, errors.New("Calculate Balance got a negative amount, while verify balance passed")
 		}
@@ -108,8 +105,4 @@ func (s *Calculator) updateState(NewVoters map[payoutscript.VoterAddress]payouts
 	s.currentState.timestamp = ts
 	s.currentState.Voters = NewVoters
 	return nil
-}
-
-func (s *Calculator) getDelegateStake(d payoutscript.Delegate) float64 {
-	return d.GetTotalValue()
 }

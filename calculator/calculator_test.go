@@ -9,7 +9,7 @@ import (
 
 func TestNewShareCalc(t *testing.T) {
 	assert.NotPanics(t, func() {
-		NewShareCalc(95.0, nil)
+		NewShareCalc(nil)
 	})
 }
 
@@ -19,8 +19,8 @@ func TestCalculator_calculateBalance(t *testing.T) {
 
 type testData struct {
 	block      map[payoutscript.VoterAddress]payoutscript.Voter
-	amount     float64
-	share      float64
+	amount     int64
+	share      int64
 	shouldPass bool
 }
 
@@ -43,7 +43,7 @@ func TestCalculator_verifyBalance(t *testing.T) {
 				},
 			},
 			amount:     2000,
-			share:      95.0,
+			share:      95,
 			shouldPass: true,
 		},
 		{
@@ -67,7 +67,7 @@ func TestCalculator_verifyBalance(t *testing.T) {
 		},
 	}
 	for _, dataset := range data {
-		s := NewShareCalc(dataset.share, nil)
+		s := NewShareCalc(nil)
 		s.updateState(dataset.block, time.Now())
 		ok := s.verifyBalance(dataset.amount)
 		assert.True(t, ok)
@@ -116,7 +116,7 @@ func TestCalculator_CalculateBlock(t *testing.T) {
 		},
 	}
 	for _, dataset := range data {
-		s := NewShareCalc(dataset.share, nil)
+		s := NewShareCalc(nil)
 		s.updateState(dataset.block, time.Now())
 		res, err := s.calculateBalance(dataset.amount)
 		assert.NoError(t, err)
@@ -146,7 +146,7 @@ func TestCalculator_NextBlock(t *testing.T) {
 	for _, data := range data {
 		blocks <- data
 	}
-	s := NewShareCalc(0, blocks)
+	s := NewShareCalc(blocks)
 	for i := range data {
 		block, err := s.NextBlock()
 		assert.NoError(t, err)

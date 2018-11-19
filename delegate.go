@@ -1,5 +1,5 @@
 package payoutscript
 
 type Delegate interface {
-	GetTotalValue() float64
+	GetTotalValue() int64
 }

@@ -8,31 +8,10 @@
   version = "0.1.0"
 
 [[projects]]
-  name = "github.com/ArkEcosystem/go-crypto"
-  packages = [
-    "crypto",
-    "crypto/base58"
-  ]
-  revision = "031ea8f59579c4ec6a6893a6bcea2a98c0aa1ad0"
-  version = "0.2.2"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/btcsuite/btcd"
-  packages = ["btcec"]
-  revision = "67e573d211ace594f1366b4ce9d39726c4b19bd0"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
-
-[[projects]]
-  name = "github.com/fatih/structs"
-  packages = ["."]
-  revision = "4966fc68f5b7593aafa6cbbba2d65ec6e1416047"
-  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/google/go-querystring"
@@ -58,15 +37,9 @@
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
 
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["ripemd160"]
-  revision = "3d3f9f413869b949e48070b5bc593aa22cc2b8f2"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9a5fcfe197d23edd7413235f867a9f7613a5f5295e7aa9e5bdc5c27cb8e39003"
+  inputs-digest = "e096400a1d2cc458baac0a3c5d935a6db3a86b5ee019b7255314124b609fd48b"
   solver-name = "gps-cdcl"
   solver-version = 1
