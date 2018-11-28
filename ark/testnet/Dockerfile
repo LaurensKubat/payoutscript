@@ -11,7 +11,7 @@ RUN apt install redis-server -y
 
 # Lerna grabs our dependencies for us. (it seems this one randomly fails sometimes when building the image)
 RUN npm install --global lerna --loglevel verbose
-RUN git clone -b master https://github.com/ArkEcosystem/core.git
+RUN git clone -b develop https://github.com/ArkEcosystem/core.git
 RUN (cd core && lerna bootstrap)
 
 # enabling all APIs by default

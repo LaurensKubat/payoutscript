@@ -4,6 +4,7 @@ import (
 	"context"
 	ark "github.com/ArkEcosystem/go-client/client/two"
 	"github.com/LaurensKubat/payoutscript"
+	"github.com/LaurensKubat/payoutscript/ark/arkutils"
 )
 
 type API struct {
@@ -11,8 +12,9 @@ type API struct {
 	client   *ark.Client
 }
 
-//TODO change Limit if it turns out to be an incorrect limit
-const Limit = 500
+// current pagination limit as defined in https://github.com/ArkEcosystem/core/tree/develop/packages/core-api
+const Limit = 100
+const DDOriginTS = int32(16247647)
 
 func (a *API) GetBlocks(blockchan chan payoutscript.Block, ctx context.Context) {
 	select {
@@ -24,7 +26,6 @@ func (a *API) GetBlocks(blockchan chan payoutscript.Block, ctx context.Context) 
 }
 
 //TODO make sure all api calls are done simultaniously
-
 func (a *API) getAllDelegateVotes() ([]ark.Transaction, error) {
 	maxPage := 1
 	var transactions []ark.Transaction
@@ -79,21 +80,27 @@ func (a *API) getBlocks() ([]ark.Block, error) {
 	return blocks, nil
 }
 
-func (a *API) CreateAllBlocks() ([]payoutscript.Block, error){
-	var voters []payoutscript.Voter
+func (a *API) getVoters() (map[int32]payoutscript.Voter, error) {
+	var voters map[int32]payoutscript.Voter
 	votes, err := a.getAllDelegateVotes()
 	if err != nil {
 		return nil, err
 	}
 	for _, vote := range votes {
 		voter := payoutscript.Voter{
-			Address: payoutscript.VoterAddress(vote.Sender),
-			Stake: vote.Amount,
-			Percentage: 
-
+			Address:    payoutscript.VoterAddress(vote.Sender),
+			Stake:      vote.Amount,
+			Percentage: a.getVoterPercentage(vote.Timestamp),
 		}
-		//TODO make util func to convert timestamps
-		voter.VoteTimestamp =  vote.Timestamp
+		voter.VoteTimestamp = arkutils.ParseArkTs(vote.Timestamp)
+		voters[vote.Timestamp.Unix] = voter
 	}
+	return voters, nil
 }
 
+func (a *API) getVoterPercentage(ts ark.Timestamp) int64 {
+	if ts.Epoch < DDOriginTS {
+		return 96
+	}
+	return 95
+}
