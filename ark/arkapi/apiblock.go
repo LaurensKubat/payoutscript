@@ -1,30 +1,9 @@
-package ark
-
-import (
-	"context"
-	ark "github.com/ArkEcosystem/go-client/client/two"
-	"github.com/LaurensKubat/payoutscript"
-	"github.com/LaurensKubat/payoutscript/ark/arkutils"
-)
+package arkapi
 
 type API struct {
-	delegate Delegate
-	client   *ark.Client
 }
 
-// current pagination limit as defined in https://github.com/ArkEcosystem/core/tree/develop/packages/core-api
-const Limit = 100
-const DDOriginTS = int32(16247647)
-
-func (a *API) GetBlocks(blockchan chan payoutscript.Block, ctx context.Context) {
-	select {
-	case <-ctx.Done():
-		return
-	default:
-
-	}
-}
-
+/*
 //TODO make sure all api calls are done simultaniously
 func (a *API) getAllDelegateVotes() ([]ark.Transaction, error) {
 	maxPage := 1
@@ -43,7 +22,9 @@ func (a *API) getAllDelegateVotes() ([]ark.Transaction, error) {
 	}
 	return transactions, nil
 }
+*/
 
+/*
 //TODO look at the indexing of the transactions and see if i can incorporate the time in the key for efficient lookup
 
 //getVoterPayouts gets all sent transactions from the delegate wallet
@@ -62,7 +43,9 @@ func (a *API) getVoterPayouts() (map[string]ark.Transaction, error) {
 	}
 	return payouts, nil
 }
+*/
 
+/*
 func (a *API) getBlocks() ([]ark.Block, error) {
 	var blocks []ark.Block
 	maxPage := 1
@@ -97,10 +80,4 @@ func (a *API) getVoters() (map[int32]payoutscript.Voter, error) {
 	}
 	return voters, nil
 }
-
-func (a *API) getVoterPercentage(ts ark.Timestamp) int64 {
-	if ts.Epoch < DDOriginTS {
-		return 96
-	}
-	return 95
-}
+*/

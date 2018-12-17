@@ -6,8 +6,9 @@ import (
 
 type Voter struct {
 	Address       VoterAddress
+	PubKey        string
 	VoteTimestamp time.Time
-	Stake         int64
+	Balance       int64
 	Percentage    int64
 	isVoter       bool
 }
