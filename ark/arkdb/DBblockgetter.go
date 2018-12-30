@@ -2,8 +2,11 @@ package arkdb
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	arkcrypto "github.com/ArkEcosystem/go-crypto/crypto"
 	"github.com/LaurensKubat/payoutscript"
+	"strings"
 )
 
 type DataScraper struct {
@@ -17,37 +20,44 @@ func NewDataScraper(db *sql.DB) *DataScraper {
 type Transactions []transaction
 
 type transaction struct {
-	id              string
-	amount          int64
-	height          int
-	recipientID     string
-	senderPubKey    string
-	serialized      []byte
-	transactiontype int
-	fee             int64
-	blockID         string
-	producedBlocks  int
+	Id              string
+	Amount          int64
+	Height          int
+	RecipientID     string
+	SenderPubKey    string
+	Serialized      []byte
+	Transactiontype int
+	Fee             int64
+	BlockID         string
+	ProducedBlocks  int
+}
+
+type stringslice struct {
+	Slice []string
+	Valid bool
+}
+
+func (s stringslice) Value() (driver.Value, error) {
+	if !s.Valid {
+		return nil, nil
+	}
+	return "'" + strings.Join(s.Slice, "', '") + "'", nil
 }
 
 // get all transactions by anyone who ever voted on the delegate
-func (d *DataScraper) getEvents(recipientID []string, pubKey []string) (Transactions, error) {
-	rows, err := d.db.Query(`
-		SELECT transactions.id, transactions.amount, blocks.height, transactions.recipient_id,
-			transactions.sender_public_key, transanctions.serialized, transactions.type, transactions.fee,
-			transactions.block_id, wallets.produced_blocks
+// the qry is made in a weird way because recipientIDs and pubKeys have a variable length
+func (d *DataScraper) GetEvents(recipientIDs []interface{}, pubKeys []interface{}) (Transactions, error) {
+	qry := `SELECT transactions.id, transactions.amount, blocks.height, transactions.recipient_id,
+			transactions.sender_public_key, transactions.serialized, transactions.type, transactions.fee,
+			transactions.block_id
 		FROM transactions 
 		  INNER JOIN blocks 
 		    ON transactions.block_id = blocks.id 
-		  INNER JOIN wallets 
-		    on transactions.recipient_id = wallets.address
-			WHERE transactions.recipient_id IN (
-			  SELECT transactions.recipient_id 
-			  FROM transactions 
-			  WHERE transactions.recipient_id IN ?
-				OR transactions.sender_public_key IN ?
-			  )
-		ORDER BY blocks.height ASC
-	`, recipientID, pubKey)
+		WHERE transactions.recipient_id IN ('a')
+		  OR transactions.sender_public_key IN  )
+ORDER BY blocks.height ASC;`
+	fmt.Println(qry)
+	rows, err := d.db.Query(qry, recipientIDs)
 
 	if err != nil {
 		return Transactions{}, err
@@ -56,9 +66,9 @@ func (d *DataScraper) getEvents(recipientID []string, pubKey []string) (Transact
 	transactions := Transactions{}
 	for rows.Next() {
 		transaction := transaction{}
-		err := rows.Scan(&transaction.id, &transaction.amount, &transaction.height, &transaction.recipientID,
-			&transaction.senderPubKey, &transaction.serialized, &transaction.transactiontype, &transaction.fee,
-			&transaction.blockID)
+		err := rows.Scan(&transaction.Id, &transaction.Amount, &transaction.Height, &transaction.RecipientID,
+			&transaction.SenderPubKey, &transaction.Serialized, &transaction.Transactiontype, &transaction.Fee,
+			&transaction.BlockID)
 		if err != nil {
 			return nil, err
 		}
@@ -77,11 +87,11 @@ type ForgedBlock struct {
 }
 
 // Select all blocks forged by the delegate and the corresponding fees and rewards
-func (d *DataScraper) getForgedBlocks(pubKey string) (ForgedBlocks, error) {
+func (d *DataScraper) GetForgedBlocks(pubKey string) (ForgedBlocks, error) {
 	rows, err := d.db.Query(`
 	SELECT blocks.height, blocks.total_fee, blocks.reward, generator_public_key
 	FROM blocks
-	WHERE generator_public_key = ?
+	WHERE generator_public_key = $1
 	ORDER BY blocks.height DESC`, pubKey)
 
 	if err != nil {
@@ -107,35 +117,38 @@ type Voter struct {
 type Voters map[payoutscript.VoterAddress]Voter
 
 // get all voters who are voters at the moment of running the payout script
-func (d *DataScraper) getVoters(delegateName string) (Voters, error) {
+func (d *DataScraper) GetVoters(delegatePubKey string) (Voters, error) {
 	serialized, err := d.getSerializedVoters()
 	if err != nil {
+		fmt.Println("cannot get voters")
 		return nil, err
 	}
 	voters := make(map[payoutscript.VoterAddress]Voter)
 	for i := 0; i < len(serialized); i++ {
-		deser := arkcrypto.DeserializeTransaction(string(serialized[i]))
-		if deser.Asset.Delegate.Username == delegateName {
-			voters[payoutscript.VoterAddress(deser.RecipientId)] = Voter{
-				Address: payoutscript.VoterAddress(deser.RecipientId),
-				PubKey:  deser.SenderPublicKey,
+		deser := arkcrypto.DeserializeTransaction(serialized[i])
+		for _, vote := range deser.Asset.Votes {
+			if strings.Contains(vote, delegatePubKey) {
+				voters[payoutscript.VoterAddress(deser.RecipientId)] = Voter{
+					Address: payoutscript.VoterAddress(deser.RecipientId),
+					PubKey:  deser.SenderPublicKey,
+				}
 			}
 		}
 	}
 	return voters, nil
 }
-func (d *DataScraper) getSerializedVoters() ([][]byte, error) {
+func (d *DataScraper) getSerializedVoters() ([]string, error) {
 	rows, err := d.db.Query(`
-	SELECT transactions.serialized
+	SELECT encode(transactions.serialized::bytea, 'hex')
 	FROM transactions
-	WHERE transactions.type = ?`, int(arkcrypto.TRANSACTION_TYPES.Vote))
+	WHERE transactions.type = $1`, arkcrypto.TRANSACTION_TYPES.Vote)
 
 	if err != nil {
 		return nil, err
 	}
-	votes := [][]byte{}
+	votes := []string{}
 	for rows.Next() {
-		serialized := []byte{}
+		serialized := ""
 		err := rows.Scan(&serialized)
 		if err != nil {
 			return nil, err
@@ -143,33 +156,4 @@ func (d *DataScraper) getSerializedVoters() ([][]byte, error) {
 		votes = append(votes, serialized)
 	}
 	return votes, nil
-}
-
-// TODO get a list of all transactions ordered by voter and if those voters have forged any blocks, look up those blocks
-// and add their reward to the total balance of that voter
-
-// statesToBlocks creates blocks from the states we query above, it then iterates backwards over all transactions,
-// keeping the voter databases, until it reaches the block height where the last payout was made
-func (d *DataScraper) statesToBlocks(delegateName string, delegatePubKey string) ([]payoutscript.Block, error) {
-	voters, err := d.getVoters(delegateName)
-	if err != nil {
-		return nil, err
-	}
-
-	//make a slice of the voter addresses and a slice of the public keys so we can fetch all transactions
-	voterAddresses := []string{}
-	publicKeys := []string{}
-	for _, voter := range voters {
-		voterAddresses = append(voterAddresses, string(voter.Address))
-		publicKeys = append(publicKeys, voter.PubKey)
-	}
-	events, err := d.getEvents(voterAddresses, publicKeys)
-	forgedBlocks, err := d.getForgedBlocks(delegatePubKey)
-	// we use events[0].height because the events are ordered by blocks.height in the SQL query
-	for i := events[0].height; i >= 0; i-- {
-		block := payoutscript.Block{}
-		if forged, exists := forgedBlocks[int64(events[i].height)]; exists {
-			block.Value = forged.Reward
-		}
-	}
 }
