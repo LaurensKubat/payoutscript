@@ -14,7 +14,7 @@ func (t *TxBuilder) BuildBlock(voters map[payoutscript.VoterAddress]int64, passp
 	vendorfield string) []*crypto.Transaction {
 	Txs := []*crypto.Transaction{}
 	for address, amount := range voters {
-		tx := crypto.BuildTransfer(string(address), uint64(amount), vendorfield, passphrase1, passphrase2)
+		tx := crypto.BuildTransfer(string(address), crypto.FlexToshi(amount), vendorfield, passphrase1, passphrase2)
 		Txs = append(Txs, tx)
 	}
 	return Txs
@@ -39,7 +39,7 @@ func (t *TxBuilder) BuildBlocksIntoBatch(voters []map[payoutscript.VoterAddress]
 	concatvoters := t.concatBlocks(voters)
 	Txs := []*crypto.Transaction{}
 	for address, amount := range concatvoters {
-		tx := crypto.BuildTransfer(string(address), uint64(amount), vendorfield, passphrase1, passphrase2)
+		tx := crypto.BuildTransfer(string(address), crypto.FlexToshi(amount), vendorfield, passphrase1, passphrase2)
 		Txs = append(Txs, tx)
 	}
 	return Txs
